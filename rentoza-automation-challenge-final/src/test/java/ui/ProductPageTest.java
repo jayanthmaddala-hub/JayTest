@@ -19,18 +19,37 @@ public class ProductPageTest {
     }
 
     @Test
-    public void testProductDetailsAndAddToCart() {
+    public void testProductDetailsAndAddToCart() throws InterruptedException {
         driver.get(BASE_URL);
 
-        WebElement firstProduct = wait.until(
-                ExpectedConditions.elementToBeClickable(By.cssSelector("a[href*='/products/']"))
-        );
-        firstProduct.click();
+        // Handle signup popup if it appears
+        try {
+            WebElement closeBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.cssSelector("button[aria-label='Close dialog']")));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", closeBtn);
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", closeBtn);
 
-        WebElement title = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("h1"))
+            System.out.println("Popup closed.");
+        } catch (TimeoutException e) {
+            System.out.println("Popup close button not found.");
+        }
+
+        // Click first product
+        WebElement firstProduct = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                       By.xpath("//a[contains(@href,'/products/tab-s9-ultra')]")
+                )
         );
-        Assert.assertFalse(title.getText().isEmpty(), "Product title should not be empty");
+       firstProduct.click();
+       System.out.println();
+        driver.findElement(By.xpath("//button[.//span[text()='Subscribe Now']]")).click();
+
+        // Validate product title
+        WebElement titleElement = driver.findElement(By.cssSelector("h2.yv-product-detail-title"));
+        String actualTitle = titleElement.getText().trim();
+        String expectedTitle = "Tab S9 Ultra";
+        Assert.assertEquals(actualTitle, expectedTitle, "Product title does not match!");
+        System.out.println("validate product title is" + " " + actualTitle);
 
         WebElement price = driver.findElement(By.cssSelector("span[class*='price']"));
         Assert.assertFalse(price.getText().isEmpty(), "Product price should not be empty");
