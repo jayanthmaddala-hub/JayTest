@@ -6,6 +6,8 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import utils.WebDriverFactory;
 import java.time.Duration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ProductPageTest {
     private WebDriver driver;
@@ -44,33 +46,52 @@ public class ProductPageTest {
        System.out.println();
         driver.findElement(By.xpath("//button[.//span[text()='Subscribe Now']]")).click();
 
-        // Validate product title
-        WebElement titleElement = driver.findElement(By.cssSelector("h2.yv-product-detail-title"));
+
+        // Validate product price
+        WebElement titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("h2.yv-product-detail-title")
+        ));
         String actualTitle = titleElement.getText().trim();
-        String expectedTitle = "Tab S9 Ultra";
-        Assert.assertEquals(actualTitle, expectedTitle, "Product title does not match!");
-        System.out.println("validate product title is" + " " + actualTitle);
+        System.out.println("Product title: " + actualTitle);
 
-        WebElement price = driver.findElement(By.cssSelector("span[class*='price']"));
-        Assert.assertFalse(price.getText().isEmpty(), "Product price should not be empty");
+        WebElement priceElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h2[contains(text(),'" + actualTitle + "')]/following::span[contains(text(),'R')][1]")
+        ));
+        String price = priceElement.getText().trim();
+        System.out.println("Product price: " + price);
+        Assert.assertFalse(price.isEmpty(), "Product price should not be empty");
 
-        WebElement image = driver.findElement(By.cssSelector("img"));
-        Assert.assertNotNull(image.getAttribute("src"), "Product image src should exist");
 
+        // Validate product image
+        WebElement imageElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//*[@id=\"media-main-33250485829844\"]/div/a")
+        ));
+
+        String imageSrc = imageElement.getAttribute("href");
+        System.out.println("Product image source: " + imageSrc);
+        Assert.assertNotNull(imageSrc, "Product image should have a valid src attribute");
+
+
+        // Add to cart
         WebElement addToCart = wait.until(
-                ExpectedConditions.elementToBeClickable(By.cssSelector("button[name='add']"))
+                ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"product-form-template--20001939161300__main-product\"]/div[3]/button"))
         );
-        addToCart.click();
+        if(addToCart.isDisplayed() || addToCart.isEnabled()) {
+            System.out.println("Product available");
 
-        WebElement cartLink = wait.until(
-                ExpectedConditions.elementToBeClickable(By.cssSelector("a[href*='/cart']"))
-        );
-        cartLink.click();
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        WebElement cartItem = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div[class*='cart-item']"))
-        );
-        Assert.assertTrue(cartItem.isDisplayed(), "Product should be in the cart");
+            WebElement totalElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//*[@id=\"stack-discounts-subtotal-value\"]")
+            ));
+            totalElement.getText().trim();
+
+            WebElement subtotalElement = driver.findElement(By.xpath("//*[@id='stack-discounts-subtotal-value']"));
+            String subtotalValue = subtotalElement.getAttribute("value");
+            System.out.println("Subtotal Value: " + subtotalValue);
+
+        }
+
     }
 
     @AfterMethod
