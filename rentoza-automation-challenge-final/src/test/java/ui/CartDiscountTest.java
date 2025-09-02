@@ -113,7 +113,7 @@ public class CartDiscountTest {
         String subtotalBefore = subtotalElement.getText().trim();
         System.out.println("Subtotal before discount: " + subtotalBefore);
 
-        
+
 
         // Apply discount code if field exists
         try {
@@ -161,5 +161,3 @@ public class CartDiscountTest {
         }
     }
 }
-
-
