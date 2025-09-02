@@ -108,10 +108,12 @@ public class CartDiscountTest {
 
         // Get subtotal before discount
         WebElement subtotalElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//*[contains(text(),'Subtotal')]/following-sibling::*")
+                By.xpath("//*[contains(@data-checkout-subtotal-price-target,'')]")
         ));
         String subtotalBefore = subtotalElement.getText().trim();
         System.out.println("Subtotal before discount: " + subtotalBefore);
+
+        
 
         // Apply discount code if field exists
         try {
@@ -159,4 +161,5 @@ public class CartDiscountTest {
         }
     }
 }
+
 
